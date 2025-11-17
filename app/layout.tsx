@@ -3,9 +3,8 @@ import type { Metadata } from "next"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "The Hunter - Blockchain Search",
-  description: "Track anything in the dark forest of Ethereum",
-    generator: 'v0.app'
+  title: "The Hunter | Track the hidden movements in Ethereum's dark forest",
+  description: "Every transaction leaves a trail. Every wallet tells a story. The Hunter sees what the dark forest hides.",
 }
 
 export default function RootLayout({

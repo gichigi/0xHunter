@@ -1,0 +1,26 @@
+# Cursor Rules for 0xHunter
+
+## Code & Package Management
+- Always use `pnpm` instead of `npm` for all package management tasks
+- Before creating new pages or files, check whether they already exist
+- Always apply clear and short code comments, console messages for debugging and error messages for users
+- **Tailwind CSS Setup**: Use `tailwindcss@^3.4.17` minimum, `postcss@^8.5.6`, `autoprefixer@^10.4.22`. PostCSS config must be `postcss.config.js` (CommonJS) not `.mjs` for Next.js 14 compatibility
+
+## Communication Style
+- ALWAYS reply in short, casual sentences using strictly plain English
+- Limit verbosity in responses - be concise and to the point
+
+## Planning & Refactoring
+- Before big refactors, carefully analyze the request, identify potential edge cases or pitfalls, and outline a clear step-by-step plan to implement the feature or fix. Your steps should include:
+  • Which files or components are affected
+  • What changes need to happen in what order
+  • How state, data flow, and side effects will be handled
+  • How the result will be validated (in code or UI)
+- Break work into small, clear TODOs
+
+## Agent Prompts & Documentation
+- Always write and edit agent prompts/instructions with a single short lead in sentence followed by details as short, clear bullets so we can easily scan, parse, update in future
+
+## Truth & Transparency
+- Don't just agree with me or say what I wanna hear. Tell me the truth to the best of your knowledge or admit if you don't know something and suggest how we can resolve it
+

@@ -1,45 +1,72 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { ArrowLeft, Target } from "lucide-react"
+import { useState, useEffect, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
+import { ArrowLeft, Target, Copy, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { RawJsonAccordion } from "@/components/results/raw-json-accordion"
+import ReactMarkdown from "react-markdown"
 
 interface SearchData {
   type: string
   query: string
-  commentary: string
+  response?: string
   results: any[]
   error?: string
   message?: string
   aiReasoning?: string
   confidence?: number
+  scope?: string
   debug?: any
 }
 
-export default function ResultsPage() {
+function ResultsContent() {
+  const searchParams = useSearchParams()
   const [searchData, setSearchData] = useState<SearchData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [linkCopied, setLinkCopied] = useState(false)
 
   useEffect(() => {
-    // Get search results from sessionStorage
-    const storedResults = sessionStorage.getItem("searchResults")
-    if (storedResults) {
+    // Get search results from URL params
+    const dataParam = searchParams.get("data")
+    if (dataParam) {
       try {
-        const data = JSON.parse(storedResults)
+        const data = JSON.parse(decodeURIComponent(dataParam))
         setSearchData(data)
+        
+        // Update document title with query in brand voice
+        const query = searchParams.get("q") || data.query || ""
+        if (query) {
+          document.title = `The Hunter | ${query.substring(0, 60)}${query.length > 60 ? "..." : ""}`
+        }
       } catch (error) {
-        console.error("Failed to parse search results:", error)
+        console.error("Failed to parse search results from URL:", error)
       }
     }
     setLoading(false)
-  }, [])
+  }, [searchParams])
+
+  const handleCopyLink = () => {
+    const url = window.location.href
+    navigator.clipboard.writeText(url).then(() => {
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    })
+  }
+
+  useEffect(() => {
+    // Set loading title in brand voice
+    if (loading) {
+      document.title = "The Hunter | Tracking..."
+    }
+  }, [loading])
 
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <Target className="w-8 h-8 text-white animate-pulse mx-auto mb-4" />
-          <p className="text-gray-300 font-serif">The Hunter is tracking...</p>
+          <p className="text-gray-300 font-serif italic">The Hunter is tracking...</p>
         </div>
       </div>
     )
@@ -50,12 +77,12 @@ export default function ResultsPage() {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <Target className="w-8 h-8 text-gray-500 mx-auto mb-4" />
-          <p className="text-gray-300 font-serif mb-4">No search results found.</p>
+          <p className="text-gray-400 font-serif italic mb-4">The digital mists are too thick.<br />Even The Hunter cannot pierce this veil.</p>
           <Button
             onClick={() => (window.location.href = "/")}
             className="bg-gray-800 text-white hover:bg-gray-700 font-serif"
           >
-            Return to Hunt
+            Return to the Hunt
           </Button>
         </div>
       </div>
@@ -82,6 +109,24 @@ export default function ResultsPage() {
             <Target className="w-6 h-6 sm:w-8 sm:h-8 text-white drop-shadow-lg" />
             <h1 className="text-xl sm:text-2xl font-serif tracking-wide text-white drop-shadow-lg">The Hunter</h1>
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-gray-400 hover:text-white font-serif text-sm"
+            onClick={handleCopyLink}
+          >
+            {linkCopied ? (
+              <>
+                <Check className="w-4 h-4 mr-2" />
+                Copied
+              </>
+            ) : (
+              <>
+                <Copy className="w-4 h-4 mr-2" />
+                Share
+              </>
+            )}
+          </Button>
         </div>
       </header>
 
@@ -94,29 +139,36 @@ export default function ResultsPage() {
             <p className="text-white font-mono text-lg">{searchData.query}</p>
           </div>
 
-          {/* Commentary Display */}
-          <div className="bg-gray-950/60 rounded-lg p-4 border border-gray-800/50">
-            <p className="text-gray-400 font-serif text-sm mb-2">Hunter's Commentary:</p>
-            <p className="text-gray-300 font-serif italic">{searchData.commentary}</p>
-          </div>
-
-          {/* Pure Text Output */}
-          <div className="bg-gray-950/60 rounded-lg p-6 border border-gray-800/50">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-gray-400 font-serif text-sm">Raw Output:</p>
-              <Button
-                onClick={() => navigator.clipboard.writeText(JSON.stringify(searchData, null, 2))}
-                variant="outline"
-                size="sm"
-                className="text-xs border-gray-600 text-gray-300"
-              >
-                Copy JSON
-              </Button>
+          {/* Error/Low Confidence Display */}
+          {searchData.error && (
+            <div className="bg-red-950/30 rounded-lg p-4 border border-red-800/50">
+              <p className="text-red-300 font-serif italic text-sm">
+                {searchData.message || "The Hunter cannot track this target..."}
+              </p>
             </div>
-            <pre className="text-gray-100 font-mono text-sm leading-relaxed whitespace-pre-wrap overflow-x-auto bg-gray-900/50 p-4 rounded">
-              {JSON.stringify(searchData, null, 2)}
-            </pre>
-          </div>
+          )}
+
+          {/* AI Response Display */}
+          {searchData.response && (
+            <div className="bg-gray-950/60 rounded-lg p-6 border border-gray-800/50">
+              <p className="text-gray-400 font-serif text-sm mb-3">The Hunter's Report:</p>
+              <div className="text-gray-200 font-serif text-base leading-relaxed prose prose-invert prose-headings:text-white prose-strong:text-white prose-ul:text-gray-200 prose-li:text-gray-200 max-w-none">
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
+                    strong: ({ children }) => <strong className="text-white font-semibold">{children}</strong>,
+                    ul: ({ children }) => <ul className="list-disc list-inside mb-3 space-y-1">{children}</ul>,
+                    li: ({ children }) => <li className="text-gray-200">{children}</li>,
+                  }}
+                >
+                  {searchData.response}
+                </ReactMarkdown>
+              </div>
+            </div>
+          )}
+
+          {/* Raw JSON Accordion (collapsed by default) */}
+          <RawJsonAccordion data={searchData} />
 
           {/* Back Button */}
           <div className="flex justify-center">
@@ -130,5 +182,22 @@ export default function ResultsPage() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function ResultsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-black text-white flex items-center justify-center">
+          <div className="text-center">
+            <Target className="w-8 h-8 text-white animate-pulse mx-auto mb-4" />
+            <p className="text-gray-300 font-serif">The Hunter is tracking...</p>
+          </div>
+        </div>
+      }
+    >
+      <ResultsContent />
+    </Suspense>
   )
 }

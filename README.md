@@ -4,15 +4,18 @@ An AI-powered blockchain search tool for Ethereum. Query on-chain data using nat
 
 ## Overview
 
-0xHunter uses OpenAI to understand natural language queries about blockchain data and fetches real-time information from Ethereum using the Alchemy SDK. Ask questions like "How much ETH does 0x... have?" and get detailed wallet analysis, token holdings, and transaction history.
+0xHunter uses OpenAI to understand natural language queries about blockchain data and fetches real-time information from Ethereum using the Alchemy SDK. Ask questions like "How much ETH does 0x... have?" and get concise, AI-generated text responses with wallet analysis, token holdings, and transaction insights.
 
 ## Features
 
 - **Natural Language Queries**: Ask questions about blockchain data in plain English
 - **AI-Powered Analysis**: OpenAI GPT-4o-mini understands your intent and plans API calls
-- **Wallet Analysis**: Get ETH balance, transaction count, token holdings, and more
+- **Scope-Based Optimization**: Automatically optimizes API calls (minimal/standard/full) based on query complexity
+- **Wallet Analysis**: Get ETH balance, transaction count, token holdings, and NFT collections
 - **Token Insights**: Analyze token metadata, balances, and transfers
-- **Dark Theme UI**: Beautiful, atmospheric interface matching "The Hunter" aesthetic
+- **Concise Text Responses**: AI-generated markdown responses in "The Hunter" brand voice
+- **Shareable Results**: Results stored in URL params - share, bookmark, or save links
+- **Dark Theme UI**: Atmospheric interface matching "The Hunter" aesthetic
 
 ## Tech Stack
 
@@ -20,6 +23,8 @@ An AI-powered blockchain search tool for Ethereum. Query on-chain data using nat
 - **Language**: TypeScript
 - **AI**: OpenAI SDK (@ai-sdk/openai)
 - **Blockchain**: Alchemy SDK
+- **Price Data**: CoinGecko API (token metadata, logos, current prices)
+- **Token Holders**: Etherscan API (top holders, total supply)
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
 
@@ -30,12 +35,14 @@ An AI-powered blockchain search tool for Ethereum. Query on-chain data using nat
 - Node.js 18+ (or use pnpm)
 - An OpenAI API key
 - An Alchemy API key ([Get one here](https://www.alchemy.com/))
+- A CoinGecko API key (optional, for token metadata) ([Get one here](https://www.coingecko.com/en/api))
+- An Etherscan API key (optional, for token holder queries) ([Get one here](https://etherscan.io/apis))
 
 ### Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/0xHunter.git
+git clone https://github.com/gichigi/0xHunter.git
 cd 0xHunter
 ```
 
@@ -53,6 +60,8 @@ cp .env.example .env.local
 ```env
 OPENAI_API_KEY=your_openai_api_key_here
 ALCHEMY_API_KEY=your_alchemy_api_key_here
+COINGECKO_API_KEY=your_coingecko_api_key_here  # Optional, for token metadata
+ETHERSCAN_API_KEY=your_etherscan_api_key_here  # Optional, for token holder queries
 ```
 
 5. Run the development server:
@@ -65,9 +74,10 @@ pnpm dev
 ## Usage
 
 1. Enter a natural language query about Ethereum addresses, tokens, or transactions
-2. The AI agent analyzes your query and determines the intent
-3. Relevant blockchain data is fetched from Alchemy
-4. Results are displayed with analysis and commentary
+2. The AI agent analyzes your query, determines intent, and selects optimal scope (minimal/standard/full)
+3. Relevant blockchain data is fetched from Alchemy based on query complexity
+4. Results are displayed as concise, AI-generated text responses in markdown format
+5. Share results via URL - all data is stored in query parameters for easy sharing
 
 ### Example Queries
 
@@ -89,7 +99,8 @@ pnpm dev
 ├── lib/                   # Core libraries
 │   └── ai-agent.ts       # AI agent logic
 ├── utils/                 # Utilities
-│   └── alchemy.ts        # Alchemy SDK setup
+│   ├── alchemy.ts        # Alchemy SDK setup
+│   └── coingecko.ts      # CoinGecko API integration (token metadata)
 └── package.json
 ```
 

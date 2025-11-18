@@ -1,0 +1,115 @@
+{
+  "collections": {
+    "BAYC": {
+      "name": "Bored Ape Yacht Club",
+      "address": "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
+      "symbol": "BAYC"
+    },
+    "MAYC": {
+      "name": "Mutant Ape Yacht Club",
+      "address": "0x60E4d786628Fea6478F785A6d7e704777c86a7c6",
+      "symbol": "MAYC"
+    },
+    "Pudgy Penguins": {
+      "name": "Pudgy Penguins",
+      "address": "0xBd3531dA5CF5857e7CfAA9042681B2b9E88a3c32",
+      "symbol": "PUDGY"
+    },
+    "Azuki": {
+      "name": "Azuki",
+      "address": "0xED5AF388653567Af2F388E6224dC7C4b3241C544",
+      "symbol": "AZUKI"
+    },
+    "Milady": {
+      "name": "Milady Maker",
+      "address": "0x5Af0D9827E0c53E4799BB226655A1de152A425a5",
+      "symbol": "MILADY"
+    },
+    "CryptoPunks": {
+      "name": "CryptoPunks",
+      "address": "0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB",
+      "symbol": "PUNK"
+    },
+    "DeGods": {
+      "name": "DeGods",
+      "address": "0x8821BeE2ba0dF28761AffF119D66390D594CD280",
+      "symbol": "DEGODS"
+    },
+    "Moonbirds": {
+      "name": "Moonbirds",
+      "address": "0x23581767a106ae21c074b2276D25e5C3e136a68b",
+      "symbol": "MOONBIRDS"
+    },
+    "Doodles": {
+      "name": "Doodles",
+      "address": "0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e",
+      "symbol": "DOODLE"
+    },
+    "CloneX": {
+      "name": "CloneX",
+      "address": "0x49cF6f5d44E70224e2E23fDcdd2C053F30aDa28B",
+      "symbol": "CLONEX"
+    },
+    "Checks": {
+      "name": "Checks - VV Edition",
+      "address": "0x34eEBEE6942d8eF3C07fAF4f0A8C2A3F97e90829",
+      "symbol": "CHECKS"
+    },
+    "Mfers": {
+      "name": "mfers",
+      "address": "0x79FCDEF22feeD20eDDacbB2587640e4542919482",
+      "symbol": "MFERS"
+    },
+    "Cool Cats": {
+      "name": "Cool Cats NFT",
+      "address": "0x1A92f7381B9F03921564a437210bB9396471050C",
+      "symbol": "COOL"
+    },
+    "World of Women": {
+      "name": "World of Women",
+      "address": "0xe785E82358879F061BC3dcAC6f0444462D4b5330",
+      "symbol": "WOW"
+    },
+    "Meebits": {
+      "name": "Meebits",
+      "address": "0x7Bd29408f11D2bFC23c34f18275bBf23bB716Bc7",
+      "symbol": "MEEBITS"
+    },
+    "VeeFriends": {
+      "name": "VeeFriends",
+      "address": "0xa3aEE8BcE55BEaA1951EF834b99f3Ac60d1ABee5",
+      "symbol": "VEEFRIENDS"
+    },
+    "Art Blocks": {
+      "name": "Art Blocks",
+      "address": "0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270",
+      "symbol": "ARTBLOCKS"
+    },
+    "Autoglyphs": {
+      "name": "Autoglyphs",
+      "address": "0xd4e4078ca3495DE5B1d4dB434BEbc5a986197782",
+      "symbol": "AUTOGLYPHS"
+    },
+    "Loot": {
+      "name": "Loot",
+      "address": "0xFF9C1b15B16263C61d017ee9F65C50e4AE0113D7",
+      "symbol": "LOOT"
+    },
+    "Nouns": {
+      "name": "Nouns",
+      "address": "0x9C8fF314C9Bc7F6e59A9d9225Fb22946427eDC03",
+      "symbol": "NOUNS"
+    },
+    "Goblintown": {
+      "name": "goblintown.wtf",
+      "address": "0xbCe3781ae7Ca1a5e050Bd9C4b773A324E7C4c4b1",
+      "symbol": "GOBLIN"
+    },
+    "Pudgy Rodents": {
+      "name": "Pudgy Rodents",
+      "address": "0x1792a96E5668ad7C167ab804a2ce45c1A487E91C",
+      "symbol": "RODENTS"
+    }
+  }
+}
+

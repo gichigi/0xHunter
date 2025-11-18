@@ -7,6 +7,7 @@ import { Search, Target, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { EthereumLogo } from "@/components/ethereum-logo"
+import { validateQuery } from "@/utils/validation"
 
 export default function HomePage() {
   const [query, setQuery] = useState("")
@@ -17,6 +18,14 @@ export default function HomePage() {
     if (query.trim() && !isSearching) {
       setIsSearching(true)
       setError(null)
+
+      // Validate query before API call
+      const validation = validateQuery(query.trim())
+      if (!validation.valid) {
+        setError(validation.error || "The Hunter cannot track this target...")
+        setIsSearching(false)
+        return
+      }
 
       try {
         // Call the search API
@@ -103,12 +112,12 @@ export default function HomePage() {
                   }}
                   onKeyPress={handleKeyPress}
                   disabled={isSearching}
-                  className="flex-1 pl-12 pr-32 py-4 bg-transparent border-0 text-white placeholder-gray-400 text-base sm:text-lg font-serif focus:ring-0 focus:outline-none tracking-wide h-14 disabled:opacity-50"
+                  className="flex-1 pl-12 pr-36 sm:pr-40 py-4 bg-transparent border-0 text-white placeholder-gray-400 text-base sm:text-lg font-serif focus:ring-0 focus:outline-none tracking-wide h-14 disabled:opacity-50"
                 />
                 <Button
                   onClick={handleSearch}
                   disabled={isSearching || !query.trim()}
-                  className="absolute right-2 bg-gray-800 text-white hover:bg-gray-700 font-serif border border-gray-600 px-4 py-2 h-10 shadow-lg shadow-gray-900/50 hover:shadow-gray-700/50 transition-all duration-200 rounded disabled:opacity-50 disabled:cursor-not-allowed min-w-[80px]"
+                  className="absolute right-2 bg-gray-800 text-white hover:bg-gray-700 font-serif border border-gray-600 px-4 py-2 h-10 shadow-lg shadow-gray-900/50 hover:shadow-gray-700/50 transition-all duration-200 rounded disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px]"
                   size="sm"
                 >
                   {isSearching ? (

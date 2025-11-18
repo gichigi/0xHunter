@@ -1,8 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { generateObject, generateText } from "ai"
+import { generateText } from "ai"
 import { openai } from "@ai-sdk/openai"
-import { z } from "zod"
 import { alchemy } from "@/utils/alchemy"
+import { createQueryPlan } from "@/lib/ai-agent"
+import { validateQuery } from "@/utils/validation"
 
 // Direct RPC fallback for SDK failures in Next.js server environment
 async function directRpcCall(method: string, params: any[]): Promise<any> {
@@ -35,182 +36,6 @@ async function directRpcCall(method: string, params: any[]): Promise<any> {
   return data.result
 }
 
-// AI Agent Schema
-const QueryPlanSchema = z.object({
-  intent: z.enum([
-    "address_analysis",
-    "token_analysis",
-    "whale_tracking",
-    "transaction_history",
-    "profit_analysis",
-    "contract_interaction",
-    "airdrop_analysis",
-    "unknown",
-  ]),
-  confidence: z.number().min(0).max(1),
-  scope: z.enum(["minimal", "standard", "full"]),
-  extractedData: z
-    .object({
-      addresses: z.array(z.string()).optional(),
-      tokens: z.array(z.string()).optional(),
-      contractAddresses: z.array(z.string()).optional(),
-      amounts: z.array(z.string()).optional(),
-      timeframes: z.array(z.string()).optional(),
-    })
-    .optional(),
-  apiCalls: z.array(
-    z.object({
-      method: z.string(),
-      params: z.array(z.union([z.string(), z.number(), z.object({}).passthrough()])),
-      purpose: z.string(),
-      priority: z.number().optional(),
-    }),
-  ),
-  reasoning: z.string(),
-  hunterCommentary: z.string(),
-})
-
-// Known contract addresses
-const KNOWN_TOKEN_CONTRACTS: Record<string, string> = {
-  USDC: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-  PEPE: "0x6982508145454Ce325dDbE47a25d4ec3d2311933",
-  DOGE: "0xba2ae424d960c26247dd6c32edc70b295c744C43",
-}
-
-async function planQuery(query: string) {
-  try {
-    console.log("🤖 Planning query with AI:", query)
-
-    const processedQuery = query
-    const extractedTokens: string[] = []
-    const extractedContractAddresses: string[] = []
-
-    for (const tokenSymbol in KNOWN_TOKEN_CONTRACTS) {
-      const regex = new RegExp(`\\$${tokenSymbol}|${tokenSymbol}`, "gi")
-      if (regex.test(processedQuery)) {
-        extractedTokens.push(tokenSymbol)
-        extractedContractAddresses.push(KNOWN_TOKEN_CONTRACTS[tokenSymbol])
-      }
-    }
-
-    const plan = await generateObject({
-      model: openai("gpt-4o-mini"),
-      mode: "tool", // Use tool/function calling mode for structured output
-      prompt: `You are The Hunter, an expert blockchain analyst. Analyze this query: "${processedQuery}"
-
-Available Alchemy API methods and their parameters:
-
-1. **eth_getBalance**:
-   * Purpose: Get ETH balance for an address.
-   * Params: \`[string_address, string_blockParameter_default_latest]\`
-   * Example: \`["0x...", "latest"]\`
-
-2. **eth_getTransactionCount**:
-   * Purpose: Get transaction count for an address.
-   * Params: \`[string_address, string_blockParameter_default_latest]\`
-   * Example: \`["0x...", "latest"]\`
-
-3. **alchemy_getTokenBalances**:
-   * Purpose: Get all ERC-20 tokens for an address.
-   * Params: \`[string_address]\`
-   * Example: \`["0x..."]\`
-
-4. **alchemy_getTokenMetadata**:
-   * Purpose: Get token information by contract address.
-   * Params: \`[string_contractAddress]\`
-   * Example: \`["0x..."]\`
-
-5. **alchemy_getAssetTransfers**:
-   * Purpose: Get transaction history and transfers.
-   * Params: \`[object_params]\`
-   * Example: \`[{ fromBlock: "0x1", toBlock: "latest", fromAddress: "0x...", category: "external" }]\`
-
-6. **alchemy_getNFTs**:
-   * Purpose: Get NFT collection.
-   * Params: \`[object_params]\`
-   * Example: \`[{ owner: "0x...", withMetadata: true }]\`
-
-7. **eth_getLogs**:
-   * Purpose: Get contract events and logs.
-   * Params: \`[object_params]\`
-   * Example: \`[{ address: "0x...", fromBlock: "0x1", toBlock: "latest" }]\`
-
-Query Type Detection:
-- ADDRESS_ANALYSIS: Contains 0x... address → analyze wallet
-- TOKEN_ANALYSIS: Contains $TOKEN or token name → find token info
-- WHALE_TRACKING: "whale", "large holders" → find big wallets
-- TRANSACTION_HISTORY: "bought", "sold", "transactions" → get history
-- PROFIT_ANALYSIS: "profit", "gains", "best trade" → analyze P&L
-- CONTRACT_INTERACTION: "contract", "dapp" → analyze smart contracts
-- AIRDROP_ANALYSIS: "airdrop", "eligible" → check airdrops
-
-Scope Detection (PER-ADDRESS analysis depth):
-Set scope based on query intent:
-- "minimal": Simple/focused queries ("ETH balance", "balance of", "compare 10 addresses") → ONLY balance
-- "standard": Basic analysis ("analyze address", "check wallet", "what tokens") → balance + txCount + tokens (NO metadata)
-- "full": Deep dives ("full analysis", "everything about", "deep dive") → balance + txCount + tokens + NFTs + metadata
-
-IMPORTANT: For comparison queries with multiple addresses, use "minimal" or "standard" scope to avoid slow/expensive calls.
-
-API Call Planning by Scope:
-- minimal: ONLY eth_getBalance for each address
-- standard: eth_getBalance + eth_getTransactionCount + alchemy_getTokenBalances for each address
-- full: eth_getBalance + eth_getTransactionCount + alchemy_getTokenBalances + alchemy_getNFTs for each address
-
-Extract key data and set confidence (0-1).
-
-Write mysterious Hunter commentary matching the query type.`,
-      schema: QueryPlanSchema,
-    })
-
-    console.log("✅ AI plan generated:", plan)
-    return plan.object
-  } catch (error) {
-    console.error("❌ AI planning failed:", error)
-
-    // Enhanced fallback detection
-    const addressMatch = query.match(/0x[a-fA-F0-9]{40}/)
-    const tokenMatch = query.match(/\$([A-Z]{2,10})/i)
-
-    if (addressMatch) {
-      return {
-        intent: "address_analysis" as const,
-        confidence: 0.7,
-        scope: "standard" as const,
-        extractedData: { addresses: [addressMatch[0]] },
-        apiCalls: [
-          { method: "eth_getBalance", params: [addressMatch[0], "latest"], purpose: "balance" },
-          { method: "eth_getTransactionCount", params: [addressMatch[0], "latest"], purpose: "transactionCount" },
-          { method: "alchemy_getTokenBalances", params: [addressMatch[0]], purpose: "tokenBalances" },
-        ],
-        reasoning: "Fallback address detection",
-        hunterCommentary: "The AI spirits are silent, but The Hunter's eyes still see the address...",
-      }
-    }
-
-    if (tokenMatch) {
-      return {
-        intent: "token_analysis" as const,
-        confidence: 0.6,
-        scope: "minimal" as const,
-        extractedData: { tokens: [tokenMatch[1]] },
-        apiCalls: [],
-        reasoning: "Fallback token detection",
-        hunterCommentary: `The ${tokenMatch[1]} token calls from the shadows, but the path remains unclear...`,
-      }
-    }
-
-    return {
-      intent: "unknown" as const,
-      confidence: 0,
-      scope: "minimal" as const,
-      extractedData: {},
-      apiCalls: [],
-      reasoning: "No fallback pattern matched",
-      hunterCommentary: "The digital mists are too thick. Even The Hunter cannot pierce this veil...",
-    }
-  }
-}
 
 async function executeApiCall(method: string, params: any[]) {
   try {
@@ -315,53 +140,44 @@ function weiToEth(wei: bigint | string): number {
   return Number(ethBigInt) + Number(remainderBigInt) / 1e18
 }
 
-async function processAddressAnalysis(address: string, scope: string, apiResults: any) {
+async function processAddressAnalysis(address: string, apiResults: any) {
   try {
-    console.log(`🔍 Processing address analysis for ${address} with scope: ${scope}`)
-
-    // Always fetch balance
-    const balance = apiResults.balance
-    const balanceWei = balance ? hexToBigInt(balance) : BigInt(0)
-    const balanceEth = weiToEth(balanceWei)
+    console.log(`🔍 Processing address analysis for ${address}`)
 
     const result: any = {
       address,
       shortAddress: `${address.slice(0, 6)}...${address.slice(-4)}`,
-      balance: `${balanceEth.toFixed(4)} ETH`,
     }
 
-    // For minimal scope, return just balance
-    if (scope === "minimal") {
-      return result
+    // Extract balance if it was fetched
+    if (apiResults.balance !== undefined) {
+      const balance = apiResults.balance
+      const balanceWei = balance ? hexToBigInt(balance) : BigInt(0)
+      const balanceEth = weiToEth(balanceWei)
+      result.balance = `${balanceEth.toFixed(4)} ETH`
     }
 
-    // For standard and full scope, add txCount
-    const txCount = apiResults.transactionCount
-    const txCountNum = txCount ? Number(hexToBigInt(txCount)) : 0
-    result.transactions = txCountNum
-
-    // For standard and full scope, add token balances (without metadata for standard)
-    const tokenBalances = apiResults.tokenBalances?.tokenBalances || []
-    const significantTokens = tokenBalances.filter((token: any) => {
-      try {
-        const bal = hexToBigInt(token.tokenBalance)
-        return bal > BigInt(0)
-      } catch {
-        return false
-      }
-    })
-
-    if (scope === "standard") {
-      // For standard scope, include tokens but without metadata
-      result.tokenHoldings = significantTokens.slice(0, 10).map((token: any) => ({
-        contractAddress: token.contractAddress,
-        balance: formatTokenBalance(token.tokenBalance, 18), // Default to 18 decimals without metadata
-      }))
-      return result
+    // Extract transaction count if it was fetched
+    if (apiResults.transactionCount !== undefined) {
+      const txCount = apiResults.transactionCount
+      const txCountNum = txCount ? Number(hexToBigInt(txCount)) : 0
+      result.transactions = txCountNum
     }
 
-    // For full scope, fetch token metadata
-    if (scope === "full") {
+    // Extract token balances if they were fetched
+    if (apiResults.tokenBalances !== undefined) {
+      const tokenBalances = apiResults.tokenBalances?.tokenBalances || []
+      const significantTokens = tokenBalances.filter((token: any) => {
+        try {
+          const bal = hexToBigInt(token.tokenBalance)
+          return bal > BigInt(0)
+        } catch {
+          return false
+        }
+      })
+
+      // Check if we need metadata (if alchemy_getTokenMetadata was called for any token)
+      // For now, always fetch metadata for tokens if tokenBalances exist
       const tokensWithMetadata = await Promise.all(
         significantTokens.slice(0, 10).map(async (token: any) => {
           const metadata = await executeApiCall("alchemy_getTokenMetadata", [token.contractAddress])
@@ -391,6 +207,34 @@ async function processAddressAnalysis(address: string, scope: string, apiResults
         balance: formatTokenBalance(token.tokenBalance, token.decimals),
         contractAddress: token.contractAddress,
       }))
+    }
+
+    // Extract NFTs if they were fetched
+    if (apiResults.nfts !== undefined) {
+      const nftsData = apiResults.nfts
+      if (nftsData) {
+        const ownedNfts = nftsData.ownedNfts || []
+        result.nfts = {
+          totalCount: nftsData.totalCount || ownedNfts.length,
+          ownedNfts: ownedNfts.slice(0, 20).map((nft: any) => ({
+            contractAddress: nft.contract?.address,
+            tokenId: nft.tokenId,
+            name: nft.name || nft.title || "Unnamed NFT",
+            collectionName: nft.contract?.name || "Unknown Collection",
+            tokenType: nft.tokenType || "UNKNOWN",
+          })),
+        }
+      } else {
+        result.nfts = {
+          totalCount: 0,
+          ownedNfts: [],
+        }
+      }
+    }
+
+    // Extract transfers if they were fetched
+    if (apiResults.transfers !== undefined) {
+      result.transfers = apiResults.transfers
     }
 
     return result
@@ -443,9 +287,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Query is required" }, { status: 400 })
     }
 
+    // Server-side validation as safety net
+    const validation = validateQuery(query.trim())
+    if (!validation.valid) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "VALIDATION_ERROR",
+          message: validation.error || "The Hunter cannot track this target...",
+        },
+        { status: 400 }
+      )
+    }
+
     console.log("🔍 AI-powered search query:", query)
 
-    const plan = await planQuery(query.trim())
+    const plan = await createQueryPlan(query.trim())
     console.log("📋 Query plan:", {
       intent: plan.intent,
       confidence: plan.confidence,
@@ -462,56 +319,79 @@ export async function POST(request: NextRequest) {
           error: "LOW_CONFIDENCE",
           message: "Try being more specific.",
           aiReasoning: plan?.reasoning || "Planning failed",
-          scope: plan?.scope || "minimal",
         },
       })
     }
 
     const processedResults = []
 
-    if (plan.intent === "address_analysis" && plan.extractedData?.addresses) {
-      // Execute API calls per address based on scope
-      for (const address of plan.extractedData.addresses) {
-        const apiResults: any = {}
-        
-        // Generate and execute API calls for this address based on scope
-        const addressApiCalls = []
-        
-        // minimal: only balance
-        addressApiCalls.push({ method: "eth_getBalance", params: [address, "latest"], purpose: "balance" })
-        
-        // standard and full: add txCount and tokenBalances
-        if (plan.scope === "standard" || plan.scope === "full") {
-          addressApiCalls.push({ method: "eth_getTransactionCount", params: [address, "latest"], purpose: "transactionCount" })
-          addressApiCalls.push({ method: "alchemy_getTokenBalances", params: [address], purpose: "tokenBalances" })
-        }
-        
-        // full: add NFTs
-        if (plan.scope === "full") {
-          addressApiCalls.push({ method: "alchemy_getNFTs", params: [{ owner: address, withMetadata: true }], purpose: "nfts" })
-        }
-        
-        // Execute API calls for this address
-        for (const apiCall of addressApiCalls) {
-          const result = await executeApiCall(apiCall.method, apiCall.params)
-          // Normalize purpose key
-          let purposeKey: string
-          if (apiCall.method === 'eth_getBalance') {
-            purposeKey = 'balance'
-          } else if (apiCall.method === 'eth_getTransactionCount') {
-            purposeKey = 'transactionCount'
-          } else if (apiCall.method === 'alchemy_getTokenBalances') {
-            purposeKey = 'tokenBalances'
-          } else if (apiCall.method === 'alchemy_getNFTs') {
-            purposeKey = 'nfts'
-          } else {
-            purposeKey = apiCall.purpose
+    // Execute API calls from plan directly
+    if (plan.apiCalls && plan.apiCalls.length > 0) {
+      const apiResults: any = {}
+      
+      // Group API calls by address if this is an address_analysis query
+      if (plan.intent === "address_analysis" && plan.extractedData?.addresses) {
+        // For address analysis, execute calls per address
+        for (const address of plan.extractedData.addresses) {
+          const addressApiResults: any = {}
+          
+          // Execute each API call, using the address from the loop
+          for (const apiCall of plan.apiCalls) {
+            // Replace address in params - AI should use actual addresses, but handle edge cases
+            const params = apiCall.params.map((param: any) => {
+              if (typeof param === 'string') {
+                // If param is an address (starts with 0x and is 42 chars), use current address
+                if (param.startsWith('0x') && param.length === 42) {
+                  return address
+                }
+                // Otherwise keep as-is (like "latest")
+                return param
+              }
+              if (typeof param === 'object' && param !== null) {
+                // Handle object params (like alchemy_getNFTs, alchemy_getAssetTransfers)
+                const newParam = { ...param }
+                // Replace address fields if they match any of the extracted addresses
+                if (newParam.owner && plan.extractedData?.addresses?.includes(newParam.owner)) {
+                  newParam.owner = address
+                }
+                if (newParam.fromAddress && plan.extractedData?.addresses?.includes(newParam.fromAddress)) {
+                  newParam.fromAddress = address
+                }
+                if (newParam.toAddress && plan.extractedData?.addresses?.includes(newParam.toAddress)) {
+                  newParam.toAddress = address
+                }
+                return newParam
+              }
+              return param
+            })
+            
+            const result = await executeApiCall(apiCall.method, params)
+            // Use purpose as the key, or derive from method
+            const purposeKey = apiCall.purpose || 
+              (apiCall.method === 'eth_getBalance' ? 'balance' :
+               apiCall.method === 'eth_getTransactionCount' ? 'transactionCount' :
+               apiCall.method === 'alchemy_getTokenBalances' ? 'tokenBalances' :
+               apiCall.method === 'alchemy_getNFTs' ? 'nfts' :
+               apiCall.method === 'alchemy_getAssetTransfers' ? 'transfers' :
+               apiCall.method)
+            addressApiResults[purposeKey] = result
           }
+          
+          const result = await processAddressAnalysis(address, addressApiResults)
+          if (result) processedResults.push(result)
+        }
+      } else {
+        // For non-address queries, execute calls directly
+        for (const apiCall of plan.apiCalls) {
+          const result = await executeApiCall(apiCall.method, apiCall.params)
+          const purposeKey = apiCall.purpose || apiCall.method
           apiResults[purposeKey] = result
         }
         
-        const result = await processAddressAnalysis(address, plan.scope, apiResults)
-        if (result) processedResults.push(result)
+        // Process results based on intent
+        if (plan.intent === "token_analysis" || plan.intent === "transaction_history") {
+          processedResults.push(apiResults)
+        }
       }
     }
 
@@ -532,8 +412,7 @@ Guidelines:
 - Use markdown for formatting (bold for emphasis, lists when needed)
 - Maximum 100 words for simple queries, 200 for comparisons
 - Only state facts from the data - don't make assumptions about missing data
-- For minimal scope: only mention balance (transactions/tokens weren't fetched)
-- For standard scope: mention balance, transactions, token count (don't list contract addresses)
+- Only mention fields that were actually fetched (check what's in the results)
 - Be direct and terse - every word must matter
 
 Example tone (concise): "This wallet holds **2.0562 ETH**. **148 transactions** recorded. Active. **10 token holdings** detected."`,
@@ -553,7 +432,6 @@ Example tone (concise): "This wallet holds **2.0562 ETH**. **148 transactions** 
         results: processedResults,
         aiReasoning: plan.reasoning,
         confidence: plan.confidence,
-        scope: plan.scope,
       },
     })
   } catch (error) {

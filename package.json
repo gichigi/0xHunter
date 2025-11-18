@@ -5,7 +5,7 @@
   "private": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/0xHunter.git"
+    "url": "https://github.com/gichigi/0xHunter.git"
   },
   "keywords": [
     "blockchain",
@@ -22,10 +22,14 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "verify-addresses": "tsx --env-file=.env.local scripts/verify-addresses.ts",
+    "fix-addresses": "tsx --env-file=.env.local scripts/fix-addresses.ts",
+    "deploy": "git add -A && git commit -m 'feat: remove scope abstraction, add token/NFT config with CoinGecko integration' && git push"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.68",
+    "@ethersproject/address": "^5.8.0",
     "@radix-ui/react-slot": "^1.2.4",
     "@types/node": "^20",
     "@types/react": "^18",
@@ -49,9 +53,11 @@
   },
   "devDependencies": {
     "@types/node": "^22",
+    "dotenv": "^17.2.3",
     "eslint": "^8",
     "eslint-config-next": "14.0.0",
     "postcss": "^8.5",
+    "tsx": "^4.20.6",
     "typescript": "^5"
   }
 }

@@ -2,7 +2,8 @@
  * NFT collection resolution utility
  * Resolves collection names to contract addresses
  * 
- * Uses static config only (no external APIs for MVP)
+ * V1: Uses static config only (22 curated collections)
+ * Post-V1: Will add fallback chain (static → cache → OpenSea/Reservoir API)
  */
 
 import collectionsConfigData from "@/config/nft-collections.json"
@@ -47,6 +48,19 @@ export function resolveNFTCollection(name: string): NFTCollectionInfo | null {
     }
   }
 
+  return null
+}
+
+/**
+ * Reverse lookup: Get collection name from contract address
+ */
+export function getCollectionNameByAddress(address: string): string | null {
+  const normalizedAddress = address.toLowerCase()
+  for (const [key, collection] of Object.entries(collectionsConfig.collections)) {
+    if (collection.address.toLowerCase() === normalizedAddress) {
+      return collection.name || key
+    }
+  }
   return null
 }
 

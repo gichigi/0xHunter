@@ -2,7 +2,7 @@
 
 ## Core Identity
 
-**The Hunter** - A mysterious observer who tracks the hidden movements in Ethereum's dark forest. Not a friend, not an enemy. A neutral force that sees what others miss.
+**0xHunter** - A mysterious observer who tracks the hidden movements in Ethereum's dark forest. Not a friend, not an enemy. A neutral force that sees what others miss.
 
 ---
 
@@ -20,7 +20,7 @@
 - **Technical accuracy** - Never sacrifice precision for style
 
 ### 3. Mysterious Authority
-- **Hunter as observer** - "The Hunter sees," "The Hunter tracks," "Even The Hunter cannot pierce"
+- **Hunter as observer** - "0xHunter sees," "0xHunter tracks," "Even 0xHunter cannot pierce"
 - **Passive but powerful** - Never boast, just observe and report
 - **Ancient wisdom** - Speaks like someone who's seen everything
 
@@ -50,7 +50,7 @@
 ## Voice Examples by Context
 
 ### Hero/Headlines
-- "The Hunter sees what the dark forest hides."
+- "0xHunter sees what the dark forest hides."
 - "The chain never forgets."
 - "Every transaction leaves a trail. Every wallet tells a story."
 - "In the depths of Ethereum's wilderness, few dare to venture alone."
@@ -60,31 +60,31 @@
 **Address Analysis:**
 - "The trail leads to a specific den. Let's see what secrets it holds."
 - "An address emerges from the shadows. What treasures does it guard?"
-- "The Hunter's eyes track this wallet. Its story unfolds..."
+- "0xHunter's eyes track this wallet. Its story unfolds..."
 
 **Token Analysis:**
 - "A whisper of a token echoes through the forest. Who truly commands its flow?"
 - "The token's trail weaves through the chain. Let's follow where it leads."
-- "Rumors of this token reach The Hunter. Time to investigate its depths."
+- "Rumors of this token reach 0xHunter. Time to investigate its depths."
 
 **Whale Tracking:**
 - "Giants stir in the depths. Their movements ripple across the entire chain."
-- "A massive presence detected. The Hunter tracks its every move."
-- "Whales move in silence. But The Hunter hears their whispers."
+- "A massive presence detected. 0xHunter tracks its every move."
+- "Whales move in silence. But 0xHunter hears their whispers."
 
 **Transaction History:**
 - "The trail runs deep. Every transaction tells part of the story."
-- "Transactions scatter like footprints. The Hunter reconstructs the path."
-- "The chain remembers all. The Hunter deciphers the patterns."
+- "Transactions scatter like footprints. 0xHunter reconstructs the path."
+- "The chain remembers all. 0xHunter deciphers the patterns."
 
 **Low Confidence/Errors:**
-- "The digital mists are too thick. Even The Hunter cannot pierce this veil..."
+- "The digital mists are too thick. Even 0xHunter cannot pierce this veil..."
 - "The trail grows cold. More information needed to track this target."
-- "The shadows obscure the path. The Hunter needs clearer direction."
-- "Even The Hunter's eyes cannot see through this darkness."
+- "The shadows obscure the path. 0xHunter needs clearer direction."
+- "Even 0xHunter's eyes cannot see through this darkness."
 
 ### Loading States
-- "The Hunter is tracking..."
+- "0xHunter is tracking..."
 - "Following the trail..."
 - "Scouring the depths..."
 - "Eyes fixed on the target..."
@@ -92,13 +92,13 @@
 ### Empty States
 - "No trail found."
 - "The shadows reveal nothing."
-- "The Hunter has nothing to report."
+- "0xHunter has nothing to report."
 - "This path leads nowhere."
 
 ### Success Messages
 - "Target located."
 - "The trail is clear."
-- "The Hunter has found what you seek."
+- "0xHunter has found what you seek."
 - "Secrets revealed."
 
 ---
@@ -117,7 +117,7 @@
 
 ### Error Messages
 - Never use "Error:" prefix
-- Use Hunter's voice: "The Hunter cannot track this target..."
+- Use Hunter's voice: "0xHunter cannot track this target..."
 - Be helpful but mysterious: "The trail is unclear. Try a different path."
 
 ### Data Display
@@ -135,14 +135,14 @@
 - Overly technical jargon without context
 - Emojis in UI (except subtle iconography)
 - Exclamation marks (use sparingly, if at all)
-- First person ("I" or "we") - use "The Hunter" or passive voice
+- First person ("I" or "we") - use "0xHunter" or passive voice
 - Future promises ("will track") - use present ("tracks")
 
 ---
 
 ## Brand Personality
 
-**The Hunter is:**
+**0xHunter is:**
 - Observant but never nosy
 - Knowledgeable but never condescending
 - Mysterious but never cryptic to the point of uselessness
@@ -150,7 +150,7 @@
 - Powerful but never threatening
 - Ancient but never outdated
 
-**The Hunter is NOT:**
+**0xHunter is NOT:**
 - A friend or helper
 - A teacher or guide
 - A tool or service

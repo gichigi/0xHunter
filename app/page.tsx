@@ -22,7 +22,7 @@ export default function HomePage() {
       // Validate query before API call
       const validation = validateQuery(query.trim())
       if (!validation.valid) {
-        setError(validation.error || "The Hunter cannot track this target...")
+        setError(validation.error || "0xHunter cannot track this target...")
         setIsSearching(false)
         return
       }
@@ -45,12 +45,12 @@ export default function HomePage() {
           window.location.href = `/results?q=${encodeURIComponent(query.trim())}&data=${encodedResults}`
         } else {
           console.error("Search failed:", data.error)
-          setError(data.message || data.error || "The Hunter cannot track this target...")
+          setError(data.message || data.error || "0xHunter cannot track this target...")
           setIsSearching(false)
         }
       } catch (error) {
         console.error("Search error:", error)
-        setError("The digital mists are too thick. The Hunter cannot pierce this veil...")
+        setError("The digital mists are too thick. 0xHunter cannot pierce this veil...")
         setIsSearching(false)
       }
     }
@@ -73,7 +73,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Target className="w-6 h-6 sm:w-8 sm:h-8 text-white drop-shadow-lg" />
-            <h1 className="text-xl sm:text-2xl font-serif tracking-wide text-white drop-shadow-lg">The Hunter</h1>
+            <h1 className="text-xl sm:text-2xl font-mono tracking-wide text-white drop-shadow-lg">0xHunter</h1>
           </div>
 
         </div>
@@ -86,7 +86,7 @@ export default function HomePage() {
           <div className="mb-8 sm:mb-12">
             <EthereumLogo className="w-12 h-20 sm:w-16 sm:h-26 mx-auto mb-6 sm:mb-8 text-gray-500 animate-pulse drop-shadow-lg" />
             <h2 className="text-3xl sm:text-4xl md:text-6xl font-serif mb-4 sm:mb-6 leading-tight tracking-tight px-2 text-white drop-shadow-2xl shadow-black/80">
-              The Hunter sees
+              0xHunter sees
               <br />
               <span className="text-gray-300 italic drop-shadow-xl">what the dark forest hides.</span>
             </h2>
@@ -104,7 +104,7 @@ export default function HomePage() {
                 <Search className="absolute left-4 w-5 h-5 text-gray-400 z-10" />
                 <Input
                   type="text"
-                  placeholder="Ask The Hunter..."
+                  placeholder="Ask 0xHunter..."
                   value={query}
                   onChange={(e) => {
                     setQuery(e.target.value)
@@ -140,6 +140,57 @@ export default function HomePage() {
             )}
           </div>
 
+          {/* Query Suggestions */}
+          <div className="max-w-2xl mx-auto px-4 sm:px-0">
+            <div className="flex flex-wrap gap-3 justify-center">
+              <button
+                onClick={() => {
+                  setQuery("Balance of 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045")
+                  setError(null)
+                }}
+                className="px-4 py-2 bg-gray-950/60 border border-gray-700 rounded-lg text-gray-300 font-serif text-sm hover:border-gray-600 hover:text-white transition-all duration-200"
+              >
+                Balance of 0xd8dA...
+              </button>
+              <button
+                onClick={() => {
+                  setQuery("What does 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 hold?")
+                  setError(null)
+                }}
+                className="px-4 py-2 bg-gray-950/60 border border-gray-700 rounded-lg text-gray-300 font-serif text-sm hover:border-gray-600 hover:text-white transition-all duration-200"
+              >
+                What does 0xd8dA... hold?
+              </button>
+              <button
+                onClick={() => {
+                  setQuery("Price of UNI")
+                  setError(null)
+                }}
+                className="px-4 py-2 bg-gray-950/60 border border-gray-700 rounded-lg text-gray-300 font-serif text-sm hover:border-gray-600 hover:text-white transition-all duration-200"
+              >
+                Price of UNI
+              </button>
+              <button
+                onClick={() => {
+                  setQuery("Does 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 own BAYC?")
+                  setError(null)
+                }}
+                className="px-4 py-2 bg-gray-950/60 border border-gray-700 rounded-lg text-gray-300 font-serif text-sm hover:border-gray-600 hover:text-white transition-all duration-200"
+              >
+                Does 0xd8dA... own BAYC?
+              </button>
+              <button
+                onClick={() => {
+                  setQuery("Analyze 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045")
+                  setError(null)
+                }}
+                className="px-4 py-2 bg-gray-950/60 border border-gray-700 rounded-lg text-gray-300 font-serif text-sm hover:border-gray-600 hover:text-white transition-all duration-200"
+              >
+                Analyze 0xd8dA...
+              </button>
+            </div>
+          </div>
+
         </div>
       </main>
 
@@ -148,7 +199,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
           <div className="flex items-center justify-center">
             <Target className="w-4 h-4 text-gray-600 mr-2" />
-            <span className="font-serif text-gray-500 text-xs italic">The Hunter</span>
+            <span className="font-serif text-gray-500 text-xs italic">0xHunter</span>
           </div>
         </div>
       </footer>

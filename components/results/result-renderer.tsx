@@ -28,7 +28,7 @@ export function ResultRenderer({ type, results }: ResultRendererProps) {
   if (!results || results.length === 0) {
     return (
       <div className="bg-gray-950/60 rounded-lg p-6 border border-gray-800/50 text-center">
-        <p className="text-gray-300 font-serif italic">The Hunter has nothing to report.</p>
+        <p className="text-gray-300 font-serif italic">0xHunter has nothing to report.</p>
       </div>
     )
   }

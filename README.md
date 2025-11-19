@@ -13,9 +13,9 @@ An AI-powered blockchain search tool for Ethereum. Query on-chain data using nat
 - **Scope-Based Optimization**: Automatically optimizes API calls (minimal/standard/full) based on query complexity
 - **Wallet Analysis**: Get ETH balance, transaction count, token holdings, and NFT collections
 - **Token Insights**: Analyze token metadata, balances, and transfers
-- **Concise Text Responses**: AI-generated markdown responses in "The Hunter" brand voice
+- **Concise Text Responses**: AI-generated markdown responses in "0xHunter" brand voice
 - **Shareable Results**: Results stored in URL params - share, bookmark, or save links
-- **Dark Theme UI**: Atmospheric interface matching "The Hunter" aesthetic
+- **Dark Theme UI**: Atmospheric interface matching "0xHunter" aesthetic
 
 ## Tech Stack
 

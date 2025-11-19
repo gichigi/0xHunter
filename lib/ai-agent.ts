@@ -3,17 +3,13 @@ import { openai } from "@ai-sdk/openai"
 import { z } from "zod"
 import { resolveTokenSymbol, resolveTokenSymbols } from "@/utils/token-resolver"
 import { resolveNFTCollection } from "@/utils/nft-resolver"
+import { getFormattedMethodList } from "@/utils/alchemy-allowlist"
 
 // AI Agent Schema
 export const QueryPlanSchema = z.object({
   intent: z.enum([
     "address_analysis",
     "token_analysis",
-    "whale_tracking",
-    "transaction_history",
-    "profit_analysis",
-    "contract_interaction",
-    "airdrop_analysis",
     "unknown",
   ]),
   confidence: z.number().min(0).max(1),
@@ -30,23 +26,46 @@ export const QueryPlanSchema = z.object({
   apiCalls: z.array(
     z.object({
       method: z.string(),
-      params: z.array(z.union([z.string(), z.number(), z.object({}).passthrough()])),
+      params: z.array(z.union([
+        z.string(), 
+        z.number(), 
+        z.object({}).passthrough(),
+        z.array(z.union([z.string(), z.number(), z.object({}).passthrough()])) // Allow arrays for alchemy_call format: [methodPath, [actualParams]]
+      ])),
       purpose: z.string(),
       priority: z.number().optional(),
     }),
   ),
   reasoning: z.string(),
-  hunterCommentary: z.string(),
 })
 
 export async function createQueryPlan(query: string) {
+  // Extract data before try/catch so it's available in fallback
+  const extractedTokens: string[] = []
+  const extractedContractAddresses: string[] = []
+  const extractedNFTCollections: string[] = []
+  
+  // Extract NFT collection names (common patterns) - do this before try/catch
+  const nftPatterns = [
+    /\b(BAYC|MAYC|Pudgy Penguins|Azuki|Milady|CryptoPunks|DeGods|Moonbirds|Doodles|CloneX|Checks|Mfers|Cool Cats|World of Women|Meebits|VeeFriends|Art Blocks|Autoglyphs|Loot|Nouns|Goblintown|Pudgy Rodents)\b/gi,
+  ]
+  
+  for (const pattern of nftPatterns) {
+    const matches = query.match(pattern)
+    if (matches) {
+      for (const match of matches) {
+        const resolved = resolveNFTCollection(match)
+        if (resolved) {
+          extractedNFTCollections.push(resolved.address)
+        }
+      }
+    }
+  }
+  
   try {
     console.log("🤖 Planning query with AI:", query)
 
     const processedQuery = query
-    const extractedTokens: string[] = []
-    const extractedContractAddresses: string[] = []
-    const extractedNFTCollections: string[] = []
 
     // Extract token symbols from query (look for $SYMBOL or SYMBOL patterns)
     const tokenPattern = /\$([A-Z]{2,10})\b|(?<!\$)\b([A-Z]{2,10})\b/gi
@@ -69,111 +88,24 @@ export async function createQueryPlan(query: string) {
       }
     }
 
-    // Extract NFT collection names (common patterns)
-    const nftPatterns = [
-      /\b(BAYC|MAYC|Pudgy Penguins|Azuki|Milady|CryptoPunks|DeGods|Moonbirds|Doodles|CloneX|Checks|Mfers|Cool Cats|World of Women|Meebits|VeeFriends|Art Blocks|Autoglyphs|Loot|Nouns|Goblintown|Pudgy Rodents)\b/gi,
-    ]
-    
-    for (const pattern of nftPatterns) {
-      const matches = processedQuery.match(pattern)
-      if (matches) {
-        for (const match of matches) {
-          const resolved = resolveNFTCollection(match)
-          if (resolved) {
-            extractedNFTCollections.push(resolved.address)
-          }
-        }
-      }
-    }
-
     const plan = await generateObject({
       model: openai("gpt-4o-mini"),
       mode: "tool", // Use tool/function calling mode for structured output
-      prompt: `You are The Hunter, an expert blockchain analyst. Analyze this query: "${processedQuery}"
+      prompt: `You are 0xHunter, an expert blockchain analyst. Analyze this query: "${processedQuery}"
 
-Available Alchemy API methods and their parameters:
+Available API Methods:
+Use alchemy_call(methodPath, params) to call any Alchemy SDK method:
 
-1. **eth_getBalance**:
-   * Purpose: Get ETH balance for an address.
-   * Params: \`[string_address, string_blockParameter_default_latest]\`
-   * Example: \`["0x...", "latest"]\`
+${getFormattedMethodList()}
 
-2. **eth_getTransactionCount**:
-   * Purpose: Get transaction count for an address.
-   * Params: \`[string_address, string_blockParameter_default_latest]\`
-   * Example: \`["0x...", "latest"]\`
-
-3. **alchemy_getTokenBalances**:
-   * Purpose: Get all ERC-20 tokens for an address.
-   * Params: \`[string_address]\`
-   * Example: \`["0x..."]\`
-
-4. **alchemy_getTokenMetadata**:
-   * Purpose: Get token information by contract address.
-   * Params: \`[string_contractAddress]\`
-   * Example: \`["0x..."]\`
-
-5. **alchemy_getAssetTransfers**:
-   * Purpose: Get transaction history and transfers.
-   * Params: \`[object_params]\`
-   * Example: \`[{ fromBlock: "0x1", toBlock: "latest", fromAddress: "0x...", category: "external" }]\`
-
-6. **alchemy_getNFTs**:
-   * Purpose: Get NFT collection.
-   * Params: \`[object_params]\`
-   * Example: \`[{ owner: "0x...", withMetadata: true }]\`
-
-7. **eth_getLogs**:
-   * Purpose: Get contract events and logs.
-   * Params: \`[object_params]\`
-   * Example: \`[{ address: "0x...", fromBlock: "0x1", toBlock: "latest" }]\`
-
-Query Type Detection:
-- ADDRESS_ANALYSIS: Contains 0x... address → analyze wallet
-- TOKEN_ANALYSIS: Contains $TOKEN or token name → find token info
-- WHALE_TRACKING: "whale", "large holders" → find big wallets
-- TRANSACTION_HISTORY: "bought", "sold", "transactions" → get history
-- PROFIT_ANALYSIS: "profit", "gains", "best trade" → analyze P&L
-- CONTRACT_INTERACTION: "contract", "dapp" → analyze smart contracts
-- AIRDROP_ANALYSIS: "airdrop", "eligible" → check airdrops
-
-API Call Planning:
-You must specify EXACT apiCalls needed based on the query. Use the ACTUAL addresses from extractedData.addresses, not placeholders.
-
-Examples (replace ADDRESS_PLACEHOLDER with actual address from extractedData):
-
-Simple balance query ("ETH balance of 0x123..."):
-- apiCalls: [{ method: "eth_getBalance", params: ["0x123...", "latest"], purpose: "balance" }]
-
-Basic wallet analysis ("analyze 0x123...", "what does 0x123... hold"):
-- apiCalls: [
-    { method: "eth_getBalance", params: ["0x123...", "latest"], purpose: "balance" },
-    { method: "eth_getTransactionCount", params: ["0x123...", "latest"], purpose: "transactionCount" },
-    { method: "alchemy_getTokenBalances", params: ["0x123..."], purpose: "tokenBalances" }
-  ]
-
-Full wallet analysis ("full analysis of 0x123...", "everything about 0x123...", "NFTs owned by 0x123..."):
-- apiCalls: [
-    { method: "eth_getBalance", params: ["0x123...", "latest"], purpose: "balance" },
-    { method: "eth_getTransactionCount", params: ["0x123...", "latest"], purpose: "transactionCount" },
-    { method: "alchemy_getTokenBalances", params: ["0x123..."], purpose: "tokenBalances" },
-    { method: "alchemy_getNFTs", params: [{ owner: "0x123...", withMetadata: true }], purpose: "nfts" }
-  ]
-
-Transfer history ("transfers from 0x123...", "when did 0x123... buy PEPE"):
-- apiCalls: [
-    { method: "alchemy_getAssetTransfers", params: [{ fromAddress: "0x123...", category: ["external", "erc20", "erc721", "erc1155"] }], purpose: "transfers" }
-  ]
-
-IMPORTANT: 
-- Use ACTUAL addresses from extractedData.addresses in your apiCalls params
-- Specify ONLY the apiCalls needed to answer the query
-- For comparison queries with multiple addresses, use minimal apiCalls (just balance) to avoid slow calls
-- Each apiCall must have a unique "purpose" that matches what data it provides
-
-Extract key data and set confidence (0-1).
-
-Write mysterious Hunter commentary matching the query type.`,
+Planning Rules:
+- Intent must be one of: "address_analysis" (for address/NFT queries), "token_analysis" (for token price queries), or "unknown"
+- Use ACTUAL addresses from extractedData.addresses (not placeholders)
+- For token price queries ("price of X", "what is X worth"), use intent "token_analysis" and alchemy_call("core.getTokenMetadata", [contractAddress]) with contractAddress from extractedData.contractAddresses (no address needed)
+- For NFT ownership queries ("does X own BAYC", "NFTs owned by X"), use intent "address_analysis" and alchemy_call("nft.getNftsForOwner", [ownerAddress, {contractAddresses: [collectionAddress]}]) when a specific collection is requested
+- For NFT holder queries ("how many BAYC holders", "top holders"), use alchemy_call("nft.getOwnersForContract", [contractAddress])
+- For transfer history queries ("who bought X", "recent transfers"), use alchemy_call("core.getAssetTransfers", [params]) with appropriate filters
+- V1 limitation: Only single-address queries supported for address analysis (no multi-address comparisons)`,
       schema: QueryPlanSchema,
     })
 
@@ -188,7 +120,7 @@ Write mysterious Hunter commentary matching the query type.`,
       },
     }
 
-    console.log("✅ AI plan generated:", planWithExtracted)
+    console.log("✅ AI plan generated:", JSON.stringify(planWithExtracted, null, 2))
     return planWithExtracted
   } catch (error) {
     console.error("❌ AI planning failed:", error)
@@ -196,19 +128,46 @@ Write mysterious Hunter commentary matching the query type.`,
     // Enhanced fallback detection
     const addressMatch = query.match(/0x[a-fA-F0-9]{40}/)
     const tokenMatch = query.match(/\$([A-Z]{2,10})/i)
+    
+    // Check for NFT mentions in query
+    const nftKeywords = ["nft", "nfts", "collection", "owns", "own", "has", "hold", "holds"]
+    const hasNFTKeywords = nftKeywords.some(keyword => query.toLowerCase().includes(keyword))
+    const hasNFTCollections = extractedNFTCollections.length > 0
 
     if (addressMatch) {
+      const apiCalls: any[] = [
+        { method: "eth_getBalance", params: [addressMatch[0], "latest"], purpose: "balance" },
+        { method: "eth_getTransactionCount", params: [addressMatch[0], "latest"], purpose: "transactionCount" },
+        { method: "alchemy_getTokenBalances", params: [addressMatch[0]], purpose: "tokenBalances" },
+      ]
+      
+      // Include NFT call if NFT keywords or collections detected
+      if (hasNFTKeywords || hasNFTCollections) {
+        // Use new method format with collection filter if available
+        if (hasNFTCollections && extractedNFTCollections.length > 0) {
+          apiCalls.push({
+            method: "nft.getNftsForOwner",
+            params: [addressMatch[0], { contractAddresses: extractedNFTCollections }],
+            purpose: "nfts",
+          })
+        } else {
+          apiCalls.push({
+            method: "nft.getNftsForOwner",
+            params: [addressMatch[0]],
+            purpose: "nfts",
+          })
+        }
+      }
+      
       return {
         intent: "address_analysis" as const,
         confidence: 0.7,
-        extractedData: { addresses: [addressMatch[0]] },
-        apiCalls: [
-          { method: "eth_getBalance", params: [addressMatch[0], "latest"], purpose: "balance" },
-          { method: "eth_getTransactionCount", params: [addressMatch[0], "latest"], purpose: "transactionCount" },
-          { method: "alchemy_getTokenBalances", params: [addressMatch[0]], purpose: "tokenBalances" },
-        ],
+        extractedData: {
+          addresses: [addressMatch[0]],
+          nftCollections: hasNFTCollections ? extractedNFTCollections : undefined,
+        },
+        apiCalls,
         reasoning: "Fallback address detection",
-        hunterCommentary: "The AI spirits are silent, but The Hunter's eyes still see the address...",
       }
     }
 
@@ -219,7 +178,6 @@ Write mysterious Hunter commentary matching the query type.`,
         extractedData: { tokens: [tokenMatch[1]] },
         apiCalls: [],
         reasoning: "Fallback token detection",
-        hunterCommentary: `The ${tokenMatch[1]} token calls from the shadows, but the path remains unclear...`,
       }
     }
 
@@ -229,7 +187,6 @@ Write mysterious Hunter commentary matching the query type.`,
       extractedData: {},
       apiCalls: [],
       reasoning: "No fallback pattern matched",
-      hunterCommentary: "The digital mists are too thick. Even The Hunter cannot pierce this veil...",
     }
   }
 }

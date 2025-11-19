@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { ArrowLeft, Target, Copy, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { RawJsonAccordion } from "@/components/results/raw-json-accordion"
+import { ResultRenderer } from "@/components/results/result-renderer"
 import ReactMarkdown from "react-markdown"
 
 interface SearchData {
@@ -37,7 +38,7 @@ function ResultsContent() {
         // Update document title with query in brand voice
         const query = searchParams.get("q") || data.query || ""
         if (query) {
-          document.title = `The Hunter | ${query.substring(0, 60)}${query.length > 60 ? "..." : ""}`
+          document.title = `0xHunter | ${query.substring(0, 60)}${query.length > 60 ? "..." : ""}`
         }
       } catch (error) {
         console.error("Failed to parse search results from URL:", error)
@@ -57,7 +58,7 @@ function ResultsContent() {
   useEffect(() => {
     // Set loading title in brand voice
     if (loading) {
-      document.title = "The Hunter | Tracking..."
+      document.title = "0xHunter | Tracking..."
     }
   }, [loading])
 
@@ -66,7 +67,7 @@ function ResultsContent() {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <Target className="w-8 h-8 text-white animate-pulse mx-auto mb-4" />
-          <p className="text-gray-300 font-serif italic">The Hunter is tracking...</p>
+          <p className="text-gray-300 font-serif italic">0xHunter is tracking...</p>
         </div>
       </div>
     )
@@ -77,7 +78,7 @@ function ResultsContent() {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <Target className="w-8 h-8 text-gray-500 mx-auto mb-4" />
-          <p className="text-gray-400 font-serif italic mb-4">The digital mists are too thick.<br />Even The Hunter cannot pierce this veil.</p>
+          <p className="text-gray-400 font-serif italic mb-4">The digital mists are too thick.<br />Even 0xHunter cannot pierce this veil.</p>
           <Button
             onClick={() => (window.location.href = "/")}
             className="bg-gray-800 text-white hover:bg-gray-700 font-serif"
@@ -107,7 +108,7 @@ function ResultsContent() {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <Target className="w-6 h-6 sm:w-8 sm:h-8 text-white drop-shadow-lg" />
-            <h1 className="text-xl sm:text-2xl font-serif tracking-wide text-white drop-shadow-lg">The Hunter</h1>
+            <h1 className="text-xl sm:text-2xl font-mono tracking-wide text-white drop-shadow-lg">0xHunter</h1>
           </div>
           <Button
             variant="ghost"
@@ -132,18 +133,20 @@ function ResultsContent() {
 
       {/* Main Content */}
       <main className="relative max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div className="space-y-6">
-          {/* Query Display */}
-          <div className="bg-gray-950/60 rounded-lg p-4 border border-gray-800/50">
-            <p className="text-gray-400 font-serif text-sm mb-2">Query:</p>
-            <p className="text-white font-mono text-lg">{searchData.query}</p>
+        <div className="space-y-8">
+          {/* Query Display - Prominent Page Title */}
+          <div className="border-b border-gray-800/50 pb-6">
+            <p className="text-gray-500 font-serif text-xs uppercase tracking-wider mb-3">Query</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif text-white leading-tight tracking-tight break-words">
+              {searchData.query}
+            </h1>
           </div>
 
           {/* Error/Low Confidence Display */}
           {searchData.error && (
             <div className="bg-red-950/30 rounded-lg p-4 border border-red-800/50">
               <p className="text-red-300 font-serif italic text-sm">
-                {searchData.message || "The Hunter cannot track this target..."}
+                {searchData.message || "0xHunter cannot track this target..."}
               </p>
             </div>
           )}
@@ -151,7 +154,7 @@ function ResultsContent() {
           {/* AI Response Display */}
           {searchData.response && (
             <div className="bg-gray-950/60 rounded-lg p-6 border border-gray-800/50">
-              <p className="text-gray-400 font-serif text-sm mb-3">The Hunter's Report:</p>
+              <p className="text-gray-400 font-serif text-sm mb-3">0xHunter's Report:</p>
               <div className="text-gray-200 font-serif text-base leading-relaxed prose prose-invert prose-headings:text-white prose-strong:text-white prose-ul:text-gray-200 prose-li:text-gray-200 max-w-none">
                 <ReactMarkdown
                   components={{
@@ -164,6 +167,14 @@ function ResultsContent() {
                   {searchData.response}
                 </ReactMarkdown>
               </div>
+            </div>
+          )}
+
+          {/* Results Display */}
+          {searchData.results && searchData.results.length > 0 && (
+            <div>
+              <p className="text-gray-500 font-serif text-xs uppercase tracking-wider mb-4">Results</p>
+              <ResultRenderer type={searchData.type} results={searchData.results} />
             </div>
           )}
 
@@ -192,7 +203,7 @@ export default function ResultsPage() {
         <div className="min-h-screen bg-black text-white flex items-center justify-center">
           <div className="text-center">
             <Target className="w-8 h-8 text-white animate-pulse mx-auto mb-4" />
-            <p className="text-gray-300 font-serif">The Hunter is tracking...</p>
+            <p className="text-gray-300 font-serif">0xHunter is tracking...</p>
           </div>
         </div>
       }

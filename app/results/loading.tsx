@@ -14,7 +14,7 @@ export default function Loading() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Target className="w-6 h-6 sm:w-8 sm:h-8 text-white drop-shadow-lg" />
-            <h1 className="text-xl sm:text-2xl font-serif tracking-wide text-white drop-shadow-lg">The Hunter</h1>
+            <h1 className="text-xl sm:text-2xl font-mono tracking-wide text-white drop-shadow-lg">0xHunter</h1>
           </div>
         </div>
       </header>
@@ -26,7 +26,7 @@ export default function Loading() {
             <Target className="w-16 h-16 text-white animate-pulse mx-auto mb-6 drop-shadow-lg" />
             <div className="flex items-center justify-center space-x-3 mb-4">
               <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
-              <h2 className="text-2xl sm:text-3xl font-serif text-white drop-shadow-lg">The Hunter is tracking...</h2>
+              <h2 className="text-2xl sm:text-3xl font-serif text-white drop-shadow-lg">0xHunter is tracking...</h2>
             </div>
             <p className="text-gray-400 font-serif text-base sm:text-lg italic leading-relaxed drop-shadow-sm max-w-2xl mx-auto">
               Piercing through the shadows of the blockchain, following the digital breadcrumbs left by every

@@ -16,7 +16,7 @@
     "web3",
     "crypto"
   ],
-  "author": "",
+  "author": "gichigi",
   "license": "MIT",
   "scripts": {
     "build": "next build",

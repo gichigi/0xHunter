@@ -2,7 +2,8 @@
  * Etherscan API integration for token holder queries
  * Used for queries like "top holders of token X" which Alchemy doesn't support
  * 
- * MVP Scope: Token holder data only (no other features)
+ * NOTE: This is not used in V1. Reserved for post-V1 features.
+ * See ROADMAP.md for details on deferred features.
  */
 
 const ETHERSCAN_API_URL = "https://api.etherscan.io/api"

@@ -30,6 +30,12 @@ export const metadata: Metadata = {
     shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
+  colorScheme: "dark light",
+  appleWebApp: {
+    capable: true,
+    title: "0xHunter",
+    statusBarStyle: "default",
+  },
 }
 
 export default function RootLayout({

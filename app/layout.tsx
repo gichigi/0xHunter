@@ -22,7 +22,6 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.ico" },
       { url: "/icon.svg", type: "image/svg+xml" },
     ],
     apple: "/icon.svg",
@@ -38,7 +37,6 @@ export default function RootLayout({
     <html lang="en" className={`${GeistMono.variable} ${GeistSans.variable}`}>
       <head>
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-        <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
       <body className="font-sans antialiased">{children}</body>
     </html>

@@ -21,7 +21,9 @@ export const metadata: Metadata = {
     description: "Every transaction leaves a trail. Every wallet tells a story. 0xHunter sees what the dark forest hides.",
   },
   icons: {
-    icon: "/icon.svg",
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
     apple: "/icon.svg",
   },
 }
@@ -33,6 +35,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${GeistMono.variable} ${GeistSans.variable}`}>
+      <head>
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+      </head>
       <body className="font-sans antialiased">{children}</body>
     </html>
   )

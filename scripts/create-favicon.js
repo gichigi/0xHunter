@@ -3,7 +3,8 @@ const toIco = require('to-ico');
 const fs = require('fs');
 const path = require('path');
 
-const sizes = [16, 32, 48, 64, 128, 256];
+// Only essential sizes for favicon (reduced to avoid build issues)
+const sizes = [16, 32, 48];
 const inputSvg = path.join(__dirname, '../public/icon.svg');
 const outputIco = path.join(__dirname, '../public/favicon.ico');
 

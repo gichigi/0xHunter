@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Search, Target, Loader2 } from "lucide-react"
+import { Search, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { EthereumLogo } from "@/components/ethereum-logo"
@@ -72,8 +72,8 @@ export default function HomePage() {
       <header className="relative border-b border-gray-800/50 px-4 sm:px-6 py-4 backdrop-blur-sm bg-black/20">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Target className="w-6 h-6 sm:w-8 sm:h-8 text-white drop-shadow-lg" />
-            <h1 className="text-xl sm:text-2xl font-mono tracking-wide text-white drop-shadow-lg">0xHunter</h1>
+            <EthereumLogo className="w-6 h-6 sm:w-8 sm:h-8 text-white drop-shadow-lg" />
+            <h2 className="text-xl sm:text-2xl font-mono tracking-tight text-white drop-shadow-lg wordmark">0xHunter</h2>
           </div>
 
         </div>
@@ -98,7 +98,7 @@ export default function HomePage() {
           </div>
 
           {/* Enhanced Search Bar */}
-          <div className="relative max-w-2xl mx-auto mb-8 sm:mb-12 px-4 sm:px-0">
+          <div className="relative max-w-2xl mx-auto mb-2 px-4 sm:px-0">
             <div className="relative bg-gray-950/90 border-2 border-gray-700 rounded-lg shadow-2xl shadow-black/50 backdrop-blur-sm hover:border-gray-600 focus-within:border-gray-500 focus-within:shadow-gray-500/20 transition-all duration-300">
               <div className="flex items-center">
                 <Search className="absolute left-4 w-5 h-5 text-gray-400 z-10" />
@@ -138,6 +138,13 @@ export default function HomePage() {
                 <p className="text-red-300 font-serif italic text-sm">{error}</p>
               </div>
             )}
+          </div>
+
+          {/* Subtle Scope Hint */}
+          <div className="max-w-2xl mx-auto px-4 sm:px-0 mb-8">
+            <p className="text-gray-400 font-serif text-xs italic text-center">
+              0xHunter can only search single addresses, top 23 tokens, and top 22 NFT collections. For now.
+            </p>
           </div>
 
           {/* Query Suggestions */}
@@ -196,10 +203,35 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="relative border-t border-gray-800/30 mt-24 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-          <div className="flex items-center justify-center">
-            <Target className="w-4 h-4 text-gray-600 mr-2" />
-            <span className="font-serif text-gray-500 text-xs italic">0xHunter</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+          <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-6">
+            {/* Brand & Description */}
+            <div className="flex flex-col items-center md:items-start gap-3">
+              <div className="flex items-center space-x-2">
+                <EthereumLogo className="w-5 h-5 text-gray-400" />
+                <h2 className="text-lg font-mono tracking-tight text-gray-300 wordmark">0xHunter</h2>
+              </div>
+              <p className="text-sm text-gray-500 font-serif max-w-md text-center md:text-left leading-relaxed">
+                An AI-powered blockchain search tool for Ethereum.
+                <br className="hidden md:block" />
+                Query on-chain data using natural language.
+              </p>
+            </div>
+
+            {/* Attribution */}
+            <div className="md:pt-[3.75rem]">
+              <p className="text-sm text-gray-500 font-serif italic text-center md:text-right">
+                Crafted in the shadows by{" "}
+                <a
+                  href="https://x.com/tahigichigi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-white transition-colors underline underline-offset-2"
+                >
+                  Tahi
+                </a>
+              </p>
+            </div>
           </div>
         </div>
       </footer>

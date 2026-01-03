@@ -27,6 +27,10 @@ export default function HomePage() {
         return
       }
 
+      // Setup request timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30s timeout
+
       try {
         // Call the search API
         const response = await fetch("/api/search", {
@@ -35,7 +39,20 @@ export default function HomePage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ query: query.trim() }),
+          signal: controller.signal,
         })
+
+        clearTimeout(timeoutId)
+
+        // Validate response before parsing JSON
+        if (!response.ok) {
+          throw new Error(`Search failed with status ${response.status}`)
+        }
+
+        const contentType = response.headers.get("content-type")
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Invalid response format")
+        }
 
         const data = await response.json()
 
@@ -49,8 +66,20 @@ export default function HomePage() {
           setIsSearching(false)
         }
       } catch (error) {
+        clearTimeout(timeoutId)
         console.error("Search error:", error)
-        setError("The digital mists are too thick. 0xHunter cannot pierce this veil...")
+
+        // Provide specific error messages based on error type
+        let errorMessage = "The digital mists are too thick. 0xHunter cannot pierce this veil..."
+        if (error instanceof Error) {
+          if (error.name === "AbortError") {
+            errorMessage = "The hunt took too long. The trail grows cold..."
+          } else if (error.message.includes("status")) {
+            errorMessage = "The hunt failed. The trail may be blocked."
+          }
+        }
+
+        setError(errorMessage)
         setIsSearching(false)
       }
     }

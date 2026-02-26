@@ -26,12 +26,10 @@ Single Next.js 14 app (no monorepo). All commands run from the workspace root.
 
 ### Known issues
 
-- **Vercel file tracing**: `next.config.mjs` had `node_modules/**/*` in `outputFileTracingExcludes` which breaks API routes on Vercel (serverless functions can't find dependencies). The fix removes that exclusion; `.npmrc` with `node-linker=hoisted` prevents the pnpm-symlink-caused micromatch stack overflow during tracing.
-- **ESLint config**: The repo ships without `.eslintrc.json`. Running `pnpm lint` for the first time prompts interactively. Create `.eslintrc.json` with `{"extends": "next/core-web-vitals"}` before running lint.
+- **Vercel file tracing**: Next.js 14.0.0 had a micromatch stack overflow bug during build trace collection with pnpm's `.pnpm` store structure. Fixed by upgrading to Next.js 14.2.35. Do NOT add `node_modules/**/*` to `outputFileTracingExcludes` - it breaks API routes on Vercel.
 - **3 pre-existing lint errors**: Unescaped `'` in `opengraph-image.tsx`, `results/page.tsx`, and `commentary-section.tsx` (react/no-unescaped-entities).
 
 ### Deployment
 
 - Prod is on Vercel at `https://0x-hunter.vercel.app`
 - Deploys from `main` branch
-- Vercel deployments were failing instantly as of Feb 2026 - likely an account-level issue (check Vercel dashboard)

@@ -9,12 +9,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Disable output file tracing to avoid micromatch stack overflow
+  // Exclude non-essential files from output file tracing
   experimental: {
     outputFileTracingExcludes: {
       '*': [
-        'node_modules/**/*',
-        '.next/**/*',
         'scripts/**/*',
       ],
     },
